@@ -61,11 +61,6 @@ Public Sub Initialize (ConfigFolder As String, ConfigFile As String)
 	mJdbcUrl2 = mConfig.Get(mDbType & ".JdbcUrl2")
 	mDriverClass2 = mConfig.Get(mDbType & ".DriverClass2")
 	#End If
-	#If Dbf or Firebird or SQLite
-	InitializeDatabase
-	#Else
-	InitializePool
-	#End If
 	#If DEBUG
 	DebugQueries = True
 	#Else
@@ -88,7 +83,7 @@ Private Sub InitializeDatabase
 	#End If
 End Sub
 #Else
-'Initialize Connection Pool
+' Initialize Connection Pool
 Private Sub	InitializePool
 	pool.Initialize(mDriverClass, mJdbcUrl.Replace("{DBName}", mDbName), mDbUser, mDbPassword)
 End Sub
@@ -146,7 +141,7 @@ Private Sub LoadSQLCommands
 	mCommands = newCommands
 End Sub
 
-'Reloads the sql commands from the configuration file.
+' Reloads the sql commands from the configuration file.
 Public Sub ReloadSQLCommands
 	mConfig = LoadConfigMap
 	LoadSQLCommands
