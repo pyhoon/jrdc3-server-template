@@ -83,8 +83,8 @@ End Sub
 Sub AppStart (Args() As String)
 	srvr.Initialize("")
 	dev = Args.Length > 0 And Args(0).EqualsIgnoreCase("dev")
-	DateTime.DateFormat = "dd/MM/yyyy"
-	DateTime.TimeFormat = "hh:mm:ss a"
+	'DateTime.DateFormat = "dd/MM/yyyy"
+	'DateTime.TimeFormat = "hh:mm:ss a"
 	rdcConnector1.Initialize (File.DirAssets, "config.properties")
 	Log("Starting server...")
 	srvr.Port = rdcConnector1.ServerPort
