@@ -6,7 +6,7 @@ Version=10.5
 @EndOfDesignText@
 'Handler class
 Sub Class_Globals
-	Private Connected As Boolean
+
 End Sub
 
 Public Sub Initialize
@@ -14,17 +14,20 @@ Public Sub Initialize
 End Sub
 
 Sub Handle (req As ServletRequest, resp As ServletResponse)
-	Log($"Loading ${req.FullRequestURI}..."$)
+	Log($"Loading ${req.FullRequestURI} ..."$)
 	resp.ContentType = "text/html"
 	If req.RequestURI = "/test" Then
-		TestConnection
+		If TestConnection Then
+			resp.Write($"<span style="color: lime">Connection successful.</span>"$)
+		Else
+			resp.Write($"<span style="color: red">Error fetching connection.</span>"$)
+		End If
 	Else
-		Main.ConnectionFailed = 0
+		resp.Write(IndexPage)
 	End If
-	resp.Write(IndexPage)
 End Sub
 
-Sub TestConnection
+Sub TestConnection As Boolean
 	Try
 		Dim Con As SQL = Main.rdcConnector1.GetConnection
 		Con.Close
@@ -32,25 +35,14 @@ Sub TestConnection
 		Dim Con As SQL = Main.rdcConnector1.GetConnection2
 		Con.Close
 		#End If
-		Connected = True
+		Return True
 	Catch
-		Main.ConnectionFailed = Main.ConnectionFailed + 1
 		Log(LastException.Message)
-		Connected = False
+		Return False
 	End Try
 End Sub
 
 Sub IndexPage As String
-	Dim ConnectionMessage As String
-	If Connected Then
-		ConnectionMessage = $"<span style="color: lime">Connection successful.</span>"$
-	Else
-		If Main.ConnectionFailed = 0 Then
-			ConnectionMessage = $"<span style="color: white">Testing connection...</span>"$
-		Else
-			ConnectionMessage = $"<span style="color: red">Error fetching connection.</span>"$
-		End If
-	End If
 	Dim Html As String = $"<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,7 +51,8 @@ Sub IndexPage As String
     <title>jRDC3 Server</title>
 	<link rel="icon" type="image/png" href="img/favicon-32x32.png" sizes="32x32" />
 	<link href="https://fonts.googleapis.com/css?family=Karla:400" rel="stylesheet" type="text/css">
-    <style>
+    <script src="/js/htmx.min.js"></script>
+	<style>
         * {
             margin: 0;
             padding: 0;
@@ -561,21 +554,16 @@ Sub IndexPage As String
                 <span class="info-label">Version</span>
                 <span class="info-value">${NumberFormat2(Main.VERSION, 1, 2, 2, False)}</span>
             </div>
-            <div class="info-connection">
-                ${ConnectionMessage}
+            <div class="info-connection" hx-get="/test" hx-trigger="load">
+				<span style="color: white">Testing connection...</span>
             </div>
             <div class="info-timestamp">
                 RemoteServer running &mdash; $DateTime{DateTime.Now}
             </div>
         </div>
     </div>
-	${IIf(Main.ConnectionFailed = 0, $"<script>
-		window.onload = function() {
-		    window.location.replace("http://localhost:${Main.srvr.Port}/test");
-		};	
-	</script>"$, "")}
 </body>
-</html>
+</Html>
 <!-- Html code created using Qwen3.7-Plus: https://chat.qwen.ai/ -->"$
 	Return Html
 End Sub
