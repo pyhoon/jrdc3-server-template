@@ -1,0 +1,148 @@
+﻿AppType=StandardJava
+Build1=DBF,b4j.jrdc2.server,Dbf
+Build2=Firebird,b4j.jrdc2.server,Firebird
+Build3=MSSQL,b4j.jrdc2.server,MSSQL
+Build4=MySQL,b4j.jrdc2.server,MySQL
+Build5=Postgresql,b4j.jrdc2.server,Postgresql
+Build6=SQLite,b4j.jrdc2.server,SQLite
+File1=config.properties
+FileGroup1=Default Group
+Group=App
+Library1=javaobject
+Library2=jcore
+Library3=jrandomaccessfile
+Library4=jserver
+Library5=jshell
+Library6=jsql
+Library7=listofarrays
+Module1=HttpsFilter
+Module2=IndexHandler
+Module3=RDCConnector
+Module4=RDCHandler
+NumberOfFiles=1
+NumberOfLibraries=7
+NumberOfModules=4
+Version=10.5
+@EndOfDesignText@
+'================================================
+'Template:  jRDC3 Server Template
+'Version:   3.60 (based on jRDC3 version 3.00)
+'License:   CC0 1.0 Universal
+'Developer: Poon Yip Hoon (Aeric)
+'================================================
+'================================================
+'Product:   Your jRDC3 Server
+'Version:   1.00
+'License:   Your License
+'Copyright: Your Company 2026
+'================================================
+#Region  Project Attributes
+#If Debug
+#CommandLineArgs: dev
+#End If
+#MergeLibraries: True
+#End Region
+#Region Macros
+'1 - Create $APPNAME$.b4j
+'2 - Open $APPNAME$.b4j
+'    -> Remove all macros for Step 1 to 5
+'3 - Create jRDC3 Server (3.60).b4xtemplate
+'4 - Copy to B4J Additional Libraries folder
+'5 - Check Release folder
+#Macro: Title, Step 1, ide://run?File=%COMSPEC%&Args=/c&Args=copy&Args=%PROJECT%\jRDC3.b4j&Args=%PROJECT%\$APPNAME$.b4j
+#Macro: Title, Step 2, ide://run?File=%WINDIR%\explorer.exe&Args=%PROJECT%\$APPNAME$.b4j
+#Macro: Title, Step 3, ide://run?File=%JAVABIN%\jar.exe&WorkingDirectory=..&Args=-cMf&Args=%PROJECT%\..\release\jRDC3+Server+(3.60).b4xtemplate&Args=Files&Args=$APPNAME$.*&Args=*.bas&Args=..\LICENSE&Args=Objects\www\img
+#Macro: Title, Step 4, ide://run?File=%COMSPEC%&Args=/c&Args=copy&Args=%PROJECT%\..\release\jRDC3+Server+(3.60).b4xtemplate&Args=%ADDITIONAL%
+#Macro: Title, Step 5, ide://run?File=%WINDIR%\SysWOW64\explorer.exe&Args=%PROJECT%\..\release
+'For release
+#Macro: Title, Edit Config, ide://run?file=%WINDIR%\SysWOW64\explorer.exe&Args=%PROJECT%\Files\config.properties
+#Macro: Title, Create Template, ide://run?file=%ADDITIONAL%\jRDC3+Server%20(3.60).b4xtemplate&args=*.b4j*&args=*.bas&args=LICENSE&args=Files
+#End Region
+' Choose build configuration
+#If MSSQL
+#AdditionalJar: jtds-1.3.1
+'#AdditionalJar: mssql-jdbc-12.2.1.jre11
+#Else If MySQL
+#AdditionalJar: mysql-connector-j-9.3.0
+'#AdditionalJar: mariadb-java-client-3.5.6
+#Else If Firebird
+#AdditionalJar: jaybird-5.0.0.java11
+#Else If Postgresql
+#AdditionalJar: postgresql-42.6.0
+#Else If DBF
+#AdditionalJar: javadbf-1.13.2
+#AdditionalJar: dbschema-dbf-jdbc1.0
+#AdditionalJar: h2-1.4.200
+#Else
+'#AdditionalJar: sqlite-jdbc-3.7.2
+' multi row insert is not supported until v3.7.11
+' https://stackoverflow.com/questions/1609637/how-to-insert-multiple-rows-in-sqlite
+' shrink SQLite JDBC library (credit to tchart)
+' https://www.b4x.com/android/forum/threads/shrinking-that-sqlite-jdbc-library.120883/
+#AdditionalJar: sqlite-jdbc-min-3.49.1.0
+#End If
+
+Sub Process_Globals
+	Public srvr As Server
+	Public rdcConnector1 As RDCConnector
+	Type DBCommand (Name As String, Parameters() As Object)
+	Type DBResult (Tag As Object, Columns As Map, Rows As List)
+	Private dev As Boolean
+	Public ConnectionFailed as Int
+	Public Const VERSION As Float = 3.6
+End Sub
+
+' <link>Open in browser|http://127.0.0.1:17178</link>
+' <link>Donate|https://paypal.me/aeric80/</link> | <link>Forum|https://www.b4x.com/android/forum/threads/project-template-jrdc3-server.171350/</link> | <link>GitHub|https://github.com/pyhoon/jrdc3-server-template</link>
+Sub AppStart (Args() As String)
+	srvr.Initialize("")
+	dev = Args.Length > 0 And Args(0).EqualsIgnoreCase("dev")
+	DateTime.DateFormat = "dd/MM/yyyy"
+	DateTime.TimeFormat = "hh:mm:ss a"
+	rdcConnector1.Initialize (File.DirAssets, "config.properties")
+	Log("Starting server...")
+	srvr.Port = rdcConnector1.ServerPort
+	ConfigureSSL(rdcConnector1.Config)
+	srvr.SetStaticFilesOptions(CreateMap("dirAllowed": False))
+	srvr.AddHandler("", "IndexHandler", False)
+	srvr.AddHandler("/test", "IndexHandler", False)
+	srvr.AddHandler("/rdc", "RDCHandler", False)
+	srvr.Start
+	Log($"jRDC3 is running (template version = ${NumberFormat2(VERSION, 1, 2, 2, False)})"$)
+	OpenBrowser($"http://localhost:${srvr.Port}"$)
+	StartMessageLoop
+End Sub
+
+Private Sub ConfigureSSL (config As Map)
+	Dim SslPort As Int = config.GetDefault("SSLPort", 0)
+	If SslPort = 0 Then Return
+	Dim ssl As SslConfiguration
+	ssl.Initialize
+	ssl.SetKeyStorePath(config.Get("SSL_KEYSTORE_DIR"), config.Get("SSL_KEYSTORE_FILE"))
+	ssl.KeyStorePassword = config.Get("SSL_KEYSTORE_PASSWORD")
+	srvr.SetSslConfiguration(ssl, SslPort)
+	'add filter to redirect all traffic from http to https (optional)
+	srvr.AddFilter("/*", "HttpsFilter", False)
+End Sub
+
+Private Sub OpenBrowser (url As String)
+	If dev Then
+		Dim shl As Shell
+		shl.Initialize("shl", "cmd", Array As String("/c", "start", url))
+		shl.Run(10000) 'set a timeout of 10 seconds
+		Wait For (shl) ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+		If Success And ExitCode = 0 Then
+			Log(StdOut)
+		Else
+			Log("Error: " & StdErr)
+		End If
+	End If
+End Sub
+
+'Sub shl_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+'	If Success And ExitCode = 0 Then
+'		Log(StdOut)
+'	Else
+'		Log("Error: " & StdErr)
+'	End If
+'End Sub
