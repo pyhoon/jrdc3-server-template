@@ -43,6 +43,8 @@ Sub TestConnection As Boolean
 End Sub
 
 Sub IndexPage As String
+	DateTime.DateFormat = "dd/MM/yyyy"
+	DateTime.TimeFormat = "hh:mm:ss a"
 	Dim Html As String = $"<!DOCTYPE html>
 <html lang="en">
 <head>
