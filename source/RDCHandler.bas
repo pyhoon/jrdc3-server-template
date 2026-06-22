@@ -21,9 +21,9 @@ Sub Handle (req As ServletRequest, resp As ServletResponse)
 	Dim con As SQL
 	Try
 		con = Main.rdcConnector1.GetConnection
-		If method = "query2" Then
+		If method = "query2" Or method = "query" Then
 			q = ExecuteQuery2(con, in, resp)
-		Else if method = "batch2" Then
+		Else if method = "batch2" Or method = "batch" Then
 			q = ExecuteBatch2(con, in, resp)
 		Else
 			Log("Unknown method: " & method)
