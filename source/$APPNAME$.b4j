@@ -44,7 +44,6 @@ Version=10.5
 #End Region
 #Region Macros
 #Macro: Title, Edit Config, ide://run?file=%WINDIR%\SysWOW64\explorer.exe&Args=%PROJECT%\Files\config.properties
-#Macro: Title, Create Template, ide://run?file=%ADDITIONAL%\jRDC3+Server%20(3.60).b4xtemplate&args=*.b4j*&args=*.bas&args=LICENSE&args=Files
 #End Region
 ' Choose build configuration
 #If MSSQL
@@ -71,13 +70,12 @@ Version=10.5
 #End If
 
 Sub Process_Globals
+	Private dev As Boolean
 	Public srvr As Server
 	Public rdcConnector1 As RDCConnector
+	Public Const VERSION As Float = 3.6
 	Type DBCommand (Name As String, Parameters() As Object)
 	Type DBResult (Tag As Object, Columns As Map, Rows As List)
-	Private dev As Boolean
-	Public ConnectionFailed as Int
-	Public Const VERSION As Float = 3.6
 End Sub
 
 ' <link>Open in browser|http://127.0.0.1:17178</link>
@@ -93,11 +91,11 @@ Sub AppStart (Args() As String)
 	ConfigureSSL(rdcConnector1.Config)
 	srvr.SetStaticFilesOptions(CreateMap("dirAllowed": False))
 	srvr.AddHandler("", "IndexHandler", False)
-	srvr.AddHandler("/test", "IndexHandler", False)
 	srvr.AddHandler("/rdc", "RDCHandler", False)
+	srvr.AddHandler("/test", "IndexHandler", False)
 	srvr.Start
 	Log($"jRDC3 is running (template version = ${NumberFormat2(VERSION, 1, 2, 2, False)})"$)
-	OpenBrowser($"http://localhost:${srvr.Port}"$)
+	OpenBrowser($"http://127.0.0.1:${srvr.Port}"$)
 	StartMessageLoop
 End Sub
 
@@ -118,19 +116,11 @@ Private Sub OpenBrowser (url As String)
 		Dim shl As Shell
 		shl.Initialize("shl", "cmd", Array As String("/c", "start", url))
 		shl.Run(10000) 'set a timeout of 10 seconds
-		Wait For (shl) ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+		Wait For shl_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
 		If Success And ExitCode = 0 Then
-			Log(StdOut)
+			Log("Success " & StdOut)
 		Else
-			Log("Error: " & StdErr)
+			Log("Error " & StdErr)
 		End If
 	End If
 End Sub
-
-'Sub shl_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
-'	If Success And ExitCode = 0 Then
-'		Log(StdOut)
-'	Else
-'		Log("Error: " & StdErr)
-'	End If
-'End Sub
