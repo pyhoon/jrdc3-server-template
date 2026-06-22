@@ -565,7 +565,7 @@ Sub IndexPage As String
         </div>
     </div>
 </body>
-</Html>
+</html>
 <!-- Html code created using Qwen3.7-Plus: https://chat.qwen.ai/ -->"$
 	Return Html
 End Sub
