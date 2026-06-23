@@ -51,7 +51,7 @@ A **B4J** template for creating a **jRDC3** remote database server — an HTTP-b
 5. Press **F5** (Run).
 6. Visit `http://127.0.0.1:17178/` to see the status dashboard.
 
-### Building the template (using #Macros)
+### Building the template (from source) using #Macros
 
 1. Clone `jRDC3.b4j` to `$APPNAME$.b4j`.
 2. Open `$APPNAME$.b4j` in a new B4J windows and remove Macros #1 to #5.
