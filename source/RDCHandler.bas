@@ -34,7 +34,9 @@ Sub Handle (req As ServletRequest, resp As ServletResponse)
 		resp.SendError(500, LastException.Message)
 	End Try
 	If con <> Null And con.IsInitialized Then con.Close
-	Log($"Command: ${q}, took: ${DateTime.Now - start}ms, client=${req.RemoteAddress}"$)
+	Dim elapsed As Long = DateTime.Now - start
+	Log($"Command: ${q}, took: ${elapsed}ms, client=${req.RemoteAddress}"$)
+	Main.AddLog("POST", "/rdc", req.RemoteAddress, $"${elapsed}ms"$)
 End Sub
 
 Private Sub CommandFromRequest (rc As Object, version As Float) As DBCommand
