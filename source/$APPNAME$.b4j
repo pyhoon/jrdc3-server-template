@@ -17,11 +17,12 @@ Library6=jsql
 Library7=listofarrays
 Module1=HttpsFilter
 Module2=IndexHandler
-Module3=RDCConnector
-Module4=RDCHandler
+Module3=LogHandler
+Module4=RDCConnector
+Module5=RDCHandler
 NumberOfFiles=1
 NumberOfLibraries=7
-NumberOfModules=4
+NumberOfModules=5
 Version=10.5
 @EndOfDesignText@
 '================================================
@@ -74,6 +75,9 @@ Sub Process_Globals
 	Public srvr As Server
 	Public rdcConnector1 As RDCConnector
 	Public Const VERSION As Float = 3.6
+	Public Const REVISION As String = "rev3"
+	Public RequestLog As List
+	Type LogEntry (Ticks As Long, Method As String, URI As String, Client As String, Duration As String)
 	Type DBCommand (Name As String, Parameters() As Object)
 	Type DBResult (Tag As Object, Columns As Map, Rows As List)
 End Sub
@@ -93,8 +97,10 @@ Sub AppStart (Args() As String)
 	srvr.AddHandler("", "IndexHandler", False)
 	srvr.AddHandler("/rdc", "RDCHandler", False)
 	srvr.AddHandler("/test", "IndexHandler", False)
+	srvr.AddHandler("/log", "LogHandler", False)
+	RequestLog.Initialize
 	srvr.Start
-	Log($"jRDC3 is running (template version = ${NumberFormat2(VERSION, 1, 2, 2, False)})"$)
+	Log($"jRDC3 is running (template version = ${NumberFormat2(VERSION, 1, 2, 2, False)} ${REVISION})"$)
 	OpenBrowser($"http://127.0.0.1:${srvr.Port}"$)
 	StartMessageLoop
 End Sub
@@ -109,6 +115,19 @@ Private Sub ConfigureSSL (config As Map)
 	srvr.SetSslConfiguration(ssl, SslPort)
 	'add filter to redirect all traffic from http to https (optional)
 	srvr.AddFilter("/*", "HttpsFilter", False)
+End Sub
+
+Public Sub AddLog (Method As String, URI As String, Client As String, Duration As String)
+	Dim entry As LogEntry
+	entry.Ticks = DateTime.Now
+	entry.Method = Method
+	entry.URI = URI
+	entry.Client = Client
+	entry.Duration = Duration
+	RequestLog.Add(entry)
+	If RequestLog.Size > 50 Then
+		RequestLog.RemoveAt(0)
+	End If
 End Sub
 
 Private Sub OpenBrowser (url As String)
