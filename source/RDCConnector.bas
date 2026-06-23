@@ -131,14 +131,12 @@ Public Sub getServerPort As Int
 End Sub
 
 Private Sub LoadSQLCommands
-	Dim newCommands As Map
-	newCommands.Initialize
-	For Each k As String In mConfig.Keys
-		If k.StartsWith("sql.") Then
-			newCommands.Put(k, mConfig.Get(k))
+	mCommands.Initialize
+	For Each Key As String In mConfig.Keys
+		If Key.StartsWith(mDbType & ".SQL.") Or Key.StartsWith("SQL.") Then
+			mCommands.Put(Key, mConfig.Get(Key))
 		End If
 	Next
-	mCommands = newCommands
 End Sub
 
 ' Reloads the sql commands from the configuration file.
@@ -151,13 +149,6 @@ Public Sub CheckDatabase
 	Try
 		Dim DBFound As Boolean
 		Log($"Checking database..."$)
-		' Put queries into map
-		mCommands.Initialize
-		For Each Key As String In mConfig.Keys
-			If Key.StartsWith(mDbType & ".SQL.") Or Key.StartsWith("SQL.") Then
-				mCommands.Put(Key, mConfig.Get(Key))
-			End If
-		Next
 		#If Dbf or Firebird or SQLite
 		mDbDir = mConfig.Get(mDbType & ".DBDir")
 		mDbFile = mConfig.Get(mDbType & ".DBFile")
