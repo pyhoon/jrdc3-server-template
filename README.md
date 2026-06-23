@@ -3,6 +3,7 @@
 A **B4J** template for creating a **jRDC3** remote database server — an HTTP-based middleware that bridges B4X client applications (B4A, B4i, B4J) with your database, exposing SQL operations through a simple binary-serialized protocol.
 
 ![Preview](jrdc3.gif)
+
 ---
 
 ## Features
@@ -53,18 +54,14 @@ A **B4J** template for creating a **jRDC3** remote database server — an HTTP-b
 5. Press **F5** (Run).
 6. Visit `http://127.0.0.1:17178/` to see the status dashboard.
 
-### Building the template (template author)
+### Building the template (from source) using #Macros
 
-1. Copy `jRDC3.b4j` to `$APPNAME$.b4j`:
-   ```
-   copy jRDC3.b4j $APPNAME$.b4j
-   ```
-2. Open `$APPNAME$.b4j` in the B4J IDE.
-3. Package the template:
-   ```
-   jar -cMf "release/jRDC3 Server (3.60).b4xtemplate" Files $APPNAME$.* *.bas ../LICENSE Objects\www
-   ```
+1. Clone `jRDC3.b4j` to `$APPNAME$.b4j`.
+2. Open `$APPNAME$.b4j` in a new B4J windows.
+   Remove #Macros Step 1 to Step 5.
+3. Package the template to release/jRDC3 Server (3.60).b4xtemplate.
 4. Copy the `.b4xtemplate` file to B4J's `Additional Libraries` directory.
+5. Check the created template in target directory.
 
 ---
 
@@ -112,7 +109,7 @@ Both client and server share the `DBCommand` / `DBResult` type definitions.
 ## Architecture
 
 ```
-┌──────────────┐      HTTP (B4XSerializator)      ┌──────────────────┐
+┌──────────────┐      HTTP (B4XSerializator)       ┌──────────────────┐
 │  B4A / B4i   │  ──────────────────────────────>  │  jRDC3 Server    │
 │  / B4J App   │  <──────────────────────────────  │  (B4J / Java)    │
 └──────────────┘                                   └────────┬─────────┘
