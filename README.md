@@ -109,7 +109,7 @@ Both client and server share the `DBCommand` / `DBResult` type definitions.
 ## Architecture
 
 ```
-┌──────────────┐      HTTP (B4XSerializator)      ┌──────────────────┐
+┌──────────────┐      HTTP (B4XSerializator)       ┌──────────────────┐
 │  B4A / B4i   │  ──────────────────────────────>  │  jRDC3 Server    │
 │  / B4J App   │  <──────────────────────────────  │  (B4J / Java)    │
 └──────────────┘                                   └────────┬─────────┘
