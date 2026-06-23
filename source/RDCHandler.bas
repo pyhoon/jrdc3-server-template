@@ -78,6 +78,8 @@ Private Sub ExecuteQuery2 (con As SQL, in As InputStream,  resp As ServletRespon
 			'check whether it is a blob field
 			If ct = -2 Or ct = 2004 Or ct = -3 Or ct = -4 Then
 				row(i) = rs.GetBlob2(i)
+			Else If ct = 2005 Then
+				row(i) = rs.GetString2(i)				
 			Else if ct = 2 Or ct = 3 Then
 				row(i) = rs.GetDouble2(i)
 			Else If DateTimeMethods.ContainsKey(ct) Then
@@ -120,15 +122,13 @@ Private Sub ExecuteBatch2 (con As SQL, in As InputStream, resp As ServletRespons
 	For Each rc As Object In raw_commands
 		commands.Add(CommandFromRequest(rc, version))
 	Next
-	
 	Try
 		con.BeginTransaction
 		For Each cmd As DBCommand In commands
-			con.ExecNonQuery2(Main.rdcConnector1.GetCommand(cmd.Name), _
-				cmd.Parameters)
+			Log($"Command: query: ${cmd.Name}, Parameters=${cmd.Parameters.As(List)}"$)
+			con.ExecNonQuery2(Main.rdcConnector1.GetCommand(cmd.Name), cmd.Parameters)
 		Next
 		con.TransactionSuccessful
-		
 	Catch
 		con.Rollback
 		Log(LastException)
