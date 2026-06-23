@@ -15,6 +15,7 @@ A **B4J** template for creating a **jRDC3** remote database server — an HTTP-b
 - **Auto-provisioning** — creates tables and seed data on first run
 - **Health check** — `/test` endpoint verifies database connectivity
 - **Status dashboard** — browser-based UI at `/` with HTMX-powered auto-refresh
+- **Request log viewer** — real-time request log via HTMX polling, shown in a modal
 - **Debug mode** — hot-reload SQL queries from config file on each request
 - **6 build configurations** — one-click select the database driver in the IDE
 
@@ -52,13 +53,19 @@ A **B4J** template for creating a **jRDC3** remote database server — an HTTP-b
 5. Press **F5** (Run).
 6. Visit `http://127.0.0.1:17178/` to see the status dashboard.
 
-### Building the template (from source) using #Macros
+### Building the template (template author)
 
-1. Clone `jRDC3.b4j` to `$APPNAME$.b4j`.
-2. Open `$APPNAME$.b4j` in a new B4J windows and remove #Macros Step 1 to Step 5.
-3. Package the template to release/jRDC3 Server (3.60).b4xtemplate.
+1. Copy `jRDC3.b4j` to `$APPNAME$.b4j`:
+   ```
+   copy jRDC3.b4j $APPNAME$.b4j
+   ```
+2. Open `$APPNAME$.b4j` in the B4J IDE.
+3. Package the template:
+   ```
+   jar -cMf "release/jRDC3 Server (3.60).b4xtemplate" Files $APPNAME$.* *.bas ../LICENSE Objects\www
+   ```
 4. Copy the `.b4xtemplate` file to B4J's `Additional Libraries` directory.
-5. Check the created template in target directory.
+
 ---
 
 ## Configuration
@@ -89,6 +96,7 @@ To enable SSL, set `SSLPort`, `SSL_KEYSTORE_FILE`, and `SSL_KEYSTORE_PASSWORD`.
 | `/`      | GET    | Status dashboard (HTML) |
 | `/test`  | GET    | Health check — returns DB connection status as HTML |
 | `/rdc`   | POST   | Execute a `DBCommand` (query or batch) — returns `DBResult` |
+| `/log`   | GET    | Returns recent request log entries as HTML (used by dashboard modal) |
 
 ### `/rdc` Protocol
 
@@ -104,7 +112,7 @@ Both client and server share the `DBCommand` / `DBResult` type definitions.
 ## Architecture
 
 ```
-┌──────────────┐      HTTP (B4XSerializator)       ┌──────────────────┐
+┌──────────────┐      HTTP (B4XSerializator)      ┌──────────────────┐
 │  B4A / B4i   │  ──────────────────────────────>  │  jRDC3 Server    │
 │  / B4J App   │  <──────────────────────────────  │  (B4J / Java)    │
 └──────────────┘                                   └────────┬─────────┘
@@ -129,6 +137,7 @@ The server uses **B4XSerializator** for binary serialization, **jserver** for HT
 | `RDCHandler.bas`   | Processes `/rdc` requests — query and batch execution |
 | `RDCConnector.bas` | Database connection management and SQL query loading |
 | `HttpsFilter.bas`  | Optional HTTP-to-HTTPS redirect filter |
+| `LogHandler.bas`   | Returns the last 50 request log entries at `/log` |
 
 ---
 
