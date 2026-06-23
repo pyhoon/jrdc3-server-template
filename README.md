@@ -2,6 +2,7 @@
 
 A **B4J** template for creating a **jRDC3** remote database server — an HTTP-based middleware that bridges B4X client applications (B4A, B4i, B4J) with your database, exposing SQL operations through a simple binary-serialized protocol.
 
+![Preview](jrdc3.gif)
 ---
 
 ## Features
